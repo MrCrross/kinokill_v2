@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Customer;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -18,29 +16,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RoleAndPermissionSeeder::class);
-
-        $admin = User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@kinokill.test',
-        ]);
-        $admin->assignRole('admin');
-
-        $manager = User::factory()->create([
-            'name' => 'Manager',
-            'email' => 'manager@kinokill.test',
-        ]);
-        $manager->assignRole('manager');
-
-        $customer = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-        $customer->assignRole('customer');
-        Customer::factory()->create([
-            'name' => $customer->name,
-            'email' => $customer->email,
-            'user_id' => $customer->id,
+        $this->call([
+            RoleAndPermissionSeeder::class,
+            UserSeeder::class,
+            GenreSeeder::class,
+            FilmSeeder::class,
+            HallSeeder::class,
+            CinemaSessionSeeder::class,
         ]);
     }
 }
