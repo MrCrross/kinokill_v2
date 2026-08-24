@@ -1,18 +1,14 @@
 <?php
 
+use App\Http\Controllers\FilmController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+Route::get('/', [FilmController::class, 'index'])->name('home');
+
+Route::get('/films', [FilmController::class, 'index'])->name('films.index');
+Route::get('/films/{film}', [FilmController::class, 'show'])->name('films.show');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
