@@ -1,12 +1,18 @@
 <?php
 
+use App\Exceptions\CannotChangeOwnRoleException;
+use App\Exceptions\HasUpcomingSessionsException;
 use App\Exceptions\SeatAlreadyBookedException;
+use App\Exceptions\SessionOverlapException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,7 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        $middleware->alias([
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -29,5 +39,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (SeatAlreadyBookedException $e, Request $request) {
             return back()->withErrors(['seat_ids' => $e->getMessage()]);
+        });
+
+        $exceptions->render(function (HasUpcomingSessionsException $e, Request $request) {
+            return back()->with('error', $e->getMessage());
+        });
+
+        $exceptions->render(function (SessionOverlapException $e, Request $request) {
+            return back()->withErrors(['starts_at' => $e->getMessage()]);
+        });
+
+        $exceptions->render(function (CannotChangeOwnRoleException $e, Request $request) {
+            return back()->with('error', $e->getMessage());
         });
     })->create();

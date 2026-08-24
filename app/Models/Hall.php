@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SeatType;
 use Database\Factories\HallFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,5 +41,24 @@ class Hall extends Model
     public function cinemaSessions(): HasMany
     {
         return $this->hasMany(CinemaSession::class);
+    }
+
+    /**
+     * Generate a rectangular grid of seats for this hall. The last two rows
+     * are VIP (matches real-cinema back-row premium seating).
+     */
+    public function generateSeats(): void
+    {
+        for ($row = 1; $row <= $this->rows_count; $row++) {
+            $seatType = $row > $this->rows_count - 2 ? SeatType::Vip : SeatType::Standard;
+
+            for ($column = 1; $column <= $this->columns_count; $column++) {
+                $this->seats()->create([
+                    'row_number' => $row,
+                    'column_number' => $column,
+                    'seat_type' => $seatType,
+                ]);
+            }
+        }
     }
 }

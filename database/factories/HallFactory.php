@@ -2,9 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\SeatType;
 use App\Models\Hall;
-use App\Models\Seat;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,24 +27,10 @@ class HallFactory extends Factory
     }
 
     /**
-     * Generate a rectangular grid of seats for this hall. The last two rows
-     * are VIP (matches real-cinema back-row premium seating).
+     * Generate this hall's seat grid (see Hall::generateSeats()).
      */
     public function withSeats(): static
     {
-        return $this->afterCreating(function (Hall $hall) {
-            for ($row = 1; $row <= $hall->rows_count; $row++) {
-                $seatType = $row > $hall->rows_count - 2 ? SeatType::Vip : SeatType::Standard;
-
-                for ($column = 1; $column <= $hall->columns_count; $column++) {
-                    Seat::create([
-                        'hall_id' => $hall->id,
-                        'row_number' => $row,
-                        'column_number' => $column,
-                        'seat_type' => $seatType,
-                    ]);
-                }
-            }
-        });
+        return $this->afterCreating(fn (Hall $hall) => $hall->generateSeats());
     }
 }
