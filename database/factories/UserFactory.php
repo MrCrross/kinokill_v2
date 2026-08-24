@@ -42,4 +42,27 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Assign the given spatie role to the created user once it is persisted.
+     */
+    private function withRole(string $role): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole($role));
+    }
+
+    public function admin(): static
+    {
+        return $this->withRole('admin');
+    }
+
+    public function manager(): static
+    {
+        return $this->withRole('manager');
+    }
+
+    public function customer(): static
+    {
+        return $this->withRole('customer');
+    }
 }
