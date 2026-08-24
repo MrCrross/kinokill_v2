@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['film_id', 'hall_id', 'starts_at', 'price_standard', 'price_vip'])]
@@ -41,6 +42,14 @@ class CinemaSession extends Model
     public function hall(): BelongsTo
     {
         return $this->belongsTo(Hall::class);
+    }
+
+    /**
+     * @return HasMany<BookingSeat, $this>
+     */
+    public function bookingSeats(): HasMany
+    {
+        return $this->hasMany(BookingSeat::class);
     }
 
     /**

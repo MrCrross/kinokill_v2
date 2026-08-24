@@ -61,6 +61,19 @@ const canManageAnything = computed(
         </header>
 
         <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+            <div
+                v-if="page.props.flash?.success"
+                class="mb-6 rounded border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300"
+            >
+                {{ page.props.flash.success }}
+            </div>
+            <div
+                v-if="page.props.flash?.error"
+                class="mb-6 rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+            >
+                {{ page.props.flash.error }}
+            </div>
+
             <slot />
         </main>
     </div>

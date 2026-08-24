@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SessionController;
@@ -13,6 +14,11 @@ Route::get('/films/{film}', [FilmController::class, 'show'])->name('films.show')
 
 Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index');
 Route::get('/sessions/{session}', [SessionController::class, 'show'])->name('sessions.show');
+
+Route::post('/sessions/{session}/bookings', [BookingController::class, 'store'])->name('bookings.store');
+Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+Route::post('/bookings/{booking}/confirm', [BookingController::class, 'confirm'])->name('bookings.confirm');
+Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

@@ -15,9 +15,10 @@ class SeatData extends Data
         public int $column,
         public string $type,
         public string $price,
+        public bool $available,
     ) {}
 
-    public static function fromModel(Seat $seat, CinemaSession $session): self
+    public static function fromModel(Seat $seat, CinemaSession $session, bool $available): self
     {
         $price = $seat->seat_type === SeatType::Vip
             ? $session->vipPrice()
@@ -29,6 +30,7 @@ class SeatData extends Data
             column: $seat->column_number,
             type: $seat->seat_type->value,
             price: $price,
+            available: $available,
         );
     }
 }

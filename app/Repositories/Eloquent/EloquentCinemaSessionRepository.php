@@ -36,6 +36,9 @@ class EloquentCinemaSessionRepository implements CinemaSessionRepositoryInterfac
 
     public function findWithHallAndSeats(int $id): CinemaSession
     {
-        return CinemaSession::query()->with(['film', 'hall.seats'])->findOrFail($id);
+        return CinemaSession::query()
+            ->with(['film', 'hall.seats'])
+            ->with(['bookingSeats' => fn ($query) => $query->whereHas('booking', fn ($query) => $query->active())])
+            ->findOrFail($id);
     }
 }

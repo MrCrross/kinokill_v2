@@ -20,12 +20,16 @@ class SessionDetailData extends Data
 
     public static function fromModel(CinemaSession $session): self
     {
+        $occupiedSeatIds = $session->bookingSeats->pluck('seat_id')->all();
+
         return new self(
             id: $session->id,
             filmTitle: $session->film->title,
             startsAt: $session->starts_at->toIso8601String(),
             hall: HallData::fromModel($session->hall),
-            seats: $session->hall->seats->map(fn ($seat) => SeatData::fromModel($seat, $session))->all(),
+            seats: $session->hall->seats
+                ->map(fn ($seat) => SeatData::fromModel($seat, $session, ! in_array($seat->id, $occupiedSeatIds, true)))
+                ->all(),
         );
     }
 }
