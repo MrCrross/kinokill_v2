@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['title', 'producer', 'country', 'duration_minutes', 'age_limit', 'rating', 'description', 'poster_path'])]
@@ -31,5 +32,13 @@ class Film extends Model
     public function genres(): BelongsToMany
     {
         return $this->belongsToMany(Genre::class);
+    }
+
+    /**
+     * @return HasMany<CinemaSession, $this>
+     */
+    public function cinemaSessions(): HasMany
+    {
+        return $this->hasMany(CinemaSession::class);
     }
 }

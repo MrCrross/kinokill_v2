@@ -24,6 +24,7 @@ const canManageAnything = computed(
 
                 <nav class="flex items-center gap-6 text-sm">
                     <Link href="/films" class="text-neutral-300 hover:text-white">Фильмы</Link>
+                    <Link href="/sessions" class="text-neutral-300 hover:text-white">Расписание</Link>
 
                     <Link
                         v-if="canManageAnything"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MainLayout from '@/Layouts/MainLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 interface Genre {
     id: number;
@@ -20,9 +20,25 @@ interface Film {
     genres: Genre[];
 }
 
+interface SessionListItem {
+    id: number;
+    startsAt: string;
+    hallName: string;
+}
+
 defineProps<{
     film: Film;
+    sessions: SessionListItem[];
 }>();
+
+function formatTime(iso: string): string {
+    return new Date(iso).toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
 </script>
 
 <template>
@@ -73,6 +89,23 @@ defineProps<{
                 </dl>
 
                 <p class="mt-6 leading-relaxed text-neutral-200">{{ film.description }}</p>
+
+                <div class="mt-8">
+                    <h2 class="mb-3 text-lg font-medium text-white">Сеансы</h2>
+                    <p v-if="sessions.length === 0" class="text-neutral-400">
+                        Сеансов пока не запланировано.
+                    </p>
+                    <div v-else class="flex flex-wrap gap-3">
+                        <Link
+                            v-for="session in sessions"
+                            :key="session.id"
+                            :href="`/sessions/${session.id}`"
+                            class="rounded border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10"
+                        >
+                            {{ formatTime(session.startsAt) }} · {{ session.hallName }}
+                        </Link>
+                    </div>
+                </div>
             </div>
         </div>
     </MainLayout>
