@@ -123,6 +123,14 @@ resources/js/
 
 В тестах `QUEUE_CONNECTION=sync` и `MAIL_MAILER=array` (см. `phpunit.xml`) — джобы выполняются синхронно, RabbitMQ для тестов не нужен; для проверки конкретно факта постановки в очередь — `Mail::fake()` + `Mail::assertQueued(...)` (см. `CreateBookingTest`).
 
+## Локализация (ru/en)
+
+`APP_LOCALE=ru` по умолчанию, `APP_FALLBACK_LOCALE=en`. `lang/ru/{validation,auth,passwords,pagination}.php` и `lang/en/*` (сгенерированы `php artisan lang:publish`) — переводы валидации и стандартных auth-сообщений Breeze; `lang/ru/validation.php` также содержит `attributes` с человеко-читаемыми именами полей (`guest_email` → «email» и т.д.), чтобы сообщения об ошибках не показывали технические имена полей. Работает автоматически для *любого* `FormRequest` в приложении — отдельно переводить каждую форму не нужно.
+
+Текущая локаль хранится в сессии (`SetLocale` middleware, `app/Http/Middleware/SetLocale.php`, добавлен в `web`-группу перед `HandleInertiaRequests`) и переключается через `GET /locale/{ru|en}` (`LocaleController`). `HandleInertiaRequests::share()` прокидывает `locale` во все Inertia-страницы.
+
+На фронтенде переведены пока только Auth-страницы (`resources/js/pages/Auth/*`, `GuestLayout.vue`) — словари в `resources/js/shared/i18n/messages.ts`, чтение текущей локали и `t()` через `useI18n()` (`resources/js/shared/i18n/index.ts`). Остальной сайт (каталог, бронирование, админка) написан с русским текстом напрямую в шаблонах — не переведён на en; если понадобится, тот же `useI18n()` расширяется новыми ключами.
+
 ## Известные решения по домену (см. полный план миграции)
 
 - **Customer vs User**: бронь всегда привязана к `Customer` (email/имя/телефон, без пароля — покупатель), а не напрямую к `User`. Гостевая покупка создаёт/находит `Customer` по email. При регистрации/входе с тем же email — `Customer` привязывается к новому `User` (`customers.user_id`), история бронирований становится видна в личном кабинете. См. `CustomerService::resolveForGuestCheckout()` / логику связывания в auth-потоке.
