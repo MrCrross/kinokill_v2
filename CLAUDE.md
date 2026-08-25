@@ -8,6 +8,7 @@
 
 - PHP 8.4, Laravel ^13.17
 - MySQL 8.4 (dev/prod через Docker), SQLite `:memory:` (тесты)
+- Redis (`phpredis`) — `CACHE_STORE`/`SESSION_DRIVER=redis`, отдельный сервис `redis` в `compose.yaml`
 - `spatie/laravel-permission` — роли и права вместо самодельного флага (см. "Роли и права" ниже)
 - `spatie/laravel-data` — типизированные DTO между слоями и для Inertia-пропсов
 - `dedoc/scramble` — автогенерация OpenAPI-документации по тонкому JSON API (`routes/api.php`, `/docs/api`)
@@ -22,7 +23,7 @@
 
 **На машине разработки нет локального PHP/Composer/Node.** Всё выполняется в контейнерах через `docker compose` (Laravel Sail сгенерировал `compose.yaml`, но сам bash-скрипт `vendor/bin/sail` **не поддерживает Git Bash/MINGW на Windows** — используем `docker compose` напрямую, не сам wrapper).
 
-Сервисы (`compose.yaml`): `laravel.test` (PHP 8.4 + Node, порт `8000`→80, Vite dev-сервер на `5173`), `mysql` (MySQL 8.4, порт `3306`), `mailpit` (SMTP-заглушка + веб-интерфейс на `8025`), `rabbitmq` (порт `5672`, management UI на `15672`), `queue` (тот же образ, что `laravel.test`, но вместо веб-сервера запускает `php artisan queue:work rabbitmq` — реальный воркер, без него письма останутся в очереди непрочитанными).
+Сервисы (`compose.yaml`): `laravel.test` (PHP 8.4 + Node, порт `8000`→80, Vite dev-сервер на `5173`), `mysql` (MySQL 8.4, порт `3306`), `redis` (порт `6379`, `CACHE_STORE`/`SESSION_DRIVER`), `mailpit` (SMTP-заглушка + веб-интерфейс на `8025`), `rabbitmq` (порт `5672`, management UI на `15672`), `queue` (тот же образ, что `laravel.test`, но вместо веб-сервера запускает `php artisan queue:work rabbitmq` — реальный воркер, без него письма останутся в очереди непрочитанными).
 
 ### Команды разработки
 
