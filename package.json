@@ -5,7 +5,10 @@
     "scripts": {
         "build": "vue-tsc && vite build",
         "dev": "vite",
-        "lint": "eslint resources/js --ext .js,.ts,.vue --ignore-path .gitignore --fix"
+        "lint": "eslint resources/js --ext .js,.ts,.vue --ignore-path .gitignore --fix",
+        "test:unit": "vitest run",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "dependencies": {
         "axios": "^1.7.4",
@@ -13,15 +16,18 @@
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
+        "@pinia/testing": "^1.0.0",
         "@rushstack/eslint-patch": "^1.8.0",
         "@tailwindcss/forms": "^0.5.3",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-vue": "^6.0.0",
         "@vue/eslint-config-prettier": "^9.0.0",
         "@vue/eslint-config-typescript": "^13.0.0",
+        "@vue/test-utils": "^2.4.6",
         "concurrently": "^10.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-vue": "^9.23.0",
+        "jsdom": "^25.0.1",
         "laravel-vite-plugin": "^3.1",
         "prettier": "^3.3.0",
         "prettier-plugin-organize-imports": "^4.0.0",
@@ -29,8 +35,15 @@
         "tailwindcss": "^4.3.3",
         "typescript": "^5.6.3",
         "vite": "^8.0.0",
+        "vitest": "^2.1.9",
         "vue": "^3.4.0",
-        "vue-tsc": "^2.0.24"
+        "vue-tsc": "^2.0.24",
+        "storybook": "^10.5.10",
+        "@storybook/vue3-vite": "^10.5.10",
+        "@storybook/addon-a11y": "^10.5.10",
+        "@storybook/addon-docs": "^10.5.10",
+        "@storybook/addon-onboarding": "^10.5.10",
+        "eslint-plugin-storybook": "^10.5.10"
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
