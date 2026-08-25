@@ -24,7 +24,9 @@ defineProps<{
             </div>
 
             <div class="flex-1 rounded-lg bg-black/40 p-6 backdrop-blur">
-                <h1 class="text-2xl font-semibold text-white">
+                <h1
+                    class="font-display text-3xl font-semibold tracking-wide text-white uppercase"
+                >
                     {{ film.title }}
                 </h1>
 

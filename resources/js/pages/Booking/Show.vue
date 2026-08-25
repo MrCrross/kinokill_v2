@@ -31,7 +31,9 @@ const selectedSeats = computed(() =>
     <Head :title="`${session.filmTitle} — ${session.hall.name}`" />
 
     <MainLayout>
-        <h1 class="text-2xl font-semibold text-white">
+        <h1
+            class="font-display text-3xl font-semibold tracking-wide text-white uppercase"
+        >
             {{ session.filmTitle }}
         </h1>
         <p class="mt-1 text-neutral-400">

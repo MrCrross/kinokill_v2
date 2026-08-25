@@ -19,6 +19,18 @@ const statusLabel = computed(
         })[props.booking.status],
 );
 
+const statusClass = computed(
+    () =>
+        ({
+            pending: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
+            confirmed:
+                'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+            cancelled:
+                'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
+            expired: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
+        })[props.booking.status],
+);
+
 function confirm() {
     router.post(`/bookings/${props.booking.id}/confirm`);
 }
@@ -33,7 +45,9 @@ function cancel() {
 
     <MainLayout>
         <div class="mx-auto max-w-lg rounded-lg bg-black/40 p-6 backdrop-blur">
-            <h1 class="text-xl font-semibold text-white">
+            <h1
+                class="font-display text-2xl font-semibold tracking-wide text-white uppercase"
+            >
                 {{ booking.filmTitle }}
             </h1>
             <p class="mt-1 text-neutral-400">
@@ -42,7 +56,8 @@ function cancel() {
             </p>
 
             <p
-                class="mt-4 inline-block rounded bg-white/10 px-3 py-1 text-sm text-white"
+                class="mt-4 inline-block rounded border px-3 py-1 text-sm"
+                :class="statusClass"
             >
                 {{ statusLabel }}
             </p>
@@ -54,18 +69,22 @@ function cancel() {
                 </li>
             </ul>
 
-            <p class="mt-4 text-white">
-                Итого:
-                <span class="font-semibold">{{ booking.totalPrice }} ₽</span>
-            </p>
-            <p class="mt-1 text-sm text-neutral-400">
-                Оплата:
-                {{
-                    booking.paymentMethod === 'cash'
-                        ? 'в кассе кинотеатра'
-                        : 'картой онлайн'
-                }}
-            </p>
+            <div class="mt-4 border-t border-dashed border-white/20 pt-4">
+                <p class="text-white">
+                    Итого:
+                    <span class="font-semibold"
+                        >{{ booking.totalPrice }} ₽</span
+                    >
+                </p>
+                <p class="mt-1 text-sm text-neutral-400">
+                    Оплата:
+                    {{
+                        booking.paymentMethod === 'cash'
+                            ? 'в кассе кинотеатра'
+                            : 'картой онлайн'
+                    }}
+                </p>
+            </div>
 
             <div class="mt-6 flex gap-3">
                 <button

@@ -13,7 +13,11 @@ defineProps<{
     <Head title="Фильмы" />
 
     <MainLayout>
-        <h1 class="mb-6 text-2xl font-semibold text-white">Сейчас в прокате</h1>
+        <h1
+            class="font-display mb-6 text-3xl font-semibold tracking-wide text-white uppercase"
+        >
+            Сейчас в прокате
+        </h1>
 
         <FilmCatalogGrid :films="films" />
     </MainLayout>
