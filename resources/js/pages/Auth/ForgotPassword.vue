@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import GuestLayout from '@/app/layouts/GuestLayout.vue';
-import InputError from '@/shared/ui/InputError.vue';
-import InputLabel from '@/shared/ui/InputLabel.vue';
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue';
-import TextInput from '@/shared/ui/TextInput.vue';
+import { useI18n } from '@/shared/i18n';
 import { Head, useForm } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
 }>();
+
+const { t } = useI18n();
 
 const form = useForm({
     email: '',
@@ -21,42 +20,47 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Forgot Password" />
+        <Head :title="t('auth.forgot_password.title')" />
 
-        <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
+        <h1 class="mb-4 text-lg font-semibold text-white">
+            {{ t('auth.forgot_password.title') }}
+        </h1>
+
+        <div class="mb-4 text-sm text-neutral-400">
+            {{ t('auth.forgot_password.description') }}
         </div>
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
+        <div v-if="status" class="mb-4 text-sm font-medium text-emerald-400">
             {{ status }}
         </div>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
+                <label for="email" class="mb-1 block text-sm text-neutral-300">
+                    {{ t('auth.email') }}
+                </label>
+                <input
                     id="email"
-                    type="email"
-                    class="mt-1 block w-full"
                     v-model="form.email"
+                    type="email"
+                    class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
                     required
                     autofocus
                     autocomplete="username"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+                <p v-if="form.errors.email" class="mt-1 text-xs text-red-400">
+                    {{ form.errors.email }}
+                </p>
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
+            <div class="mt-6 flex items-center justify-end">
+                <button
+                    type="submit"
                     :disabled="form.processing"
+                    class="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    Email Password Reset Link
-                </PrimaryButton>
+                    {{ t('auth.forgot_password.submit') }}
+                </button>
             </div>
         </form>
     </GuestLayout>

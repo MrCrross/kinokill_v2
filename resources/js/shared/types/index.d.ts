@@ -5,6 +5,8 @@ export interface User {
     email_verified_at?: string;
 }
 
+export type Locale = 'ru' | 'en';
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -17,4 +19,5 @@ export type PageProps<
         success?: string | null;
         error?: string | null;
     };
+    locale: Locale;
 };

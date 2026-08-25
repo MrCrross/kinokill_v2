@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import GuestLayout from '@/app/layouts/GuestLayout.vue';
-import InputError from '@/shared/ui/InputError.vue';
-import InputLabel from '@/shared/ui/InputLabel.vue';
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue';
-import TextInput from '@/shared/ui/TextInput.vue';
+import { useI18n } from '@/shared/i18n';
 import { Head, useForm } from '@inertiajs/vue3';
+
+const { t } = useI18n();
 
 const form = useForm({
     password: '',
@@ -21,36 +20,49 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Confirm Password" />
+        <Head :title="t('auth.confirm_password.title')" />
 
-        <div class="mb-4 text-sm text-gray-600">
-            This is a secure area of the application. Please confirm your
-            password before continuing.
+        <h1 class="mb-4 text-lg font-semibold text-white">
+            {{ t('auth.confirm_password.title') }}
+        </h1>
+
+        <div class="mb-4 text-sm text-neutral-400">
+            {{ t('auth.confirm_password.description') }}
         </div>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="password" value="Password" />
-                <TextInput
+                <label
+                    for="password"
+                    class="mb-1 block text-sm text-neutral-300"
+                >
+                    {{ t('auth.password') }}
+                </label>
+                <input
                     id="password"
-                    type="password"
-                    class="mt-1 block w-full"
                     v-model="form.password"
+                    type="password"
+                    class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
                     required
                     autocomplete="current-password"
                     autofocus
                 />
-                <InputError class="mt-2" :message="form.errors.password" />
+                <p
+                    v-if="form.errors.password"
+                    class="mt-1 text-xs text-red-400"
+                >
+                    {{ form.errors.password }}
+                </p>
             </div>
 
-            <div class="mt-4 flex justify-end">
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
+            <div class="mt-6 flex justify-end">
+                <button
+                    type="submit"
                     :disabled="form.processing"
+                    class="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    Confirm
-                </PrimaryButton>
+                    {{ t('auth.confirm_password.submit') }}
+                </button>
             </div>
         </form>
     </GuestLayout>
