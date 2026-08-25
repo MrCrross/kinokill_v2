@@ -10,6 +10,12 @@ defineProps<{
 <template>
     <template v-if="user">
         <Link
+            :href="route('dashboard')"
+            class="text-neutral-300 hover:text-white"
+        >
+            Личный кабинет
+        </Link>
+        <Link
             :href="route('profile.edit')"
             class="text-neutral-300 hover:text-white"
         >

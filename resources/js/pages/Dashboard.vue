@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/app/layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const user = computed(() => usePage().props.auth.user);
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Личный кабинет" />
 
     <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-xl leading-tight font-semibold text-gray-800">
-                Dashboard
-            </h2>
-        </template>
+        <template #header>Личный кабинет</template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">You're logged in!</div>
-                </div>
-            </div>
+        <div
+            class="rounded-lg border border-white/10 bg-black/40 p-6 backdrop-blur"
+        >
+            <p class="text-neutral-300">
+                Здравствуйте, {{ user?.name }}! Здесь появится история ваших
+                бронирований.
+            </p>
         </div>
     </AuthenticatedLayout>
 </template>
