@@ -6,12 +6,17 @@ use App\Http\Controllers\Admin\SessionAdminController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\FilmController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [FilmController::class, 'index'])->name('home');
+
+Route::get('/locale/{locale}', [LocaleController::class, 'update'])
+    ->where('locale', 'ru|en')
+    ->name('locale.update');
 
 Route::get('/films', [FilmController::class, 'index'])->name('films.index');
 Route::get('/films/{film}', [FilmController::class, 'show'])->name('films.show');
