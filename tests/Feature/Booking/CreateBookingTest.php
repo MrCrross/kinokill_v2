@@ -3,12 +3,14 @@
 namespace Tests\Feature\Booking;
 
 use App\Enums\BookingStatus;
+use App\Mail\BookingConfirmationMail;
 use App\Models\Booking;
 use App\Models\CinemaSession;
 use App\Models\Customer;
 use App\Models\Hall;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CreateBookingTest extends TestCase
@@ -17,6 +19,8 @@ class CreateBookingTest extends TestCase
 
     public function test_guest_can_book_seats_by_email(): void
     {
+        Mail::fake();
+
         $hall = Hall::factory()->withSeats()->create([
             'price_standard' => 300,
             'price_vip' => 500,
@@ -41,6 +45,12 @@ class CreateBookingTest extends TestCase
         $customer = Customer::where('email', 'ivan@example.com')->firstOrFail();
         $this->assertNull($customer->user_id);
         $this->assertSame($customer->id, $booking->customer_id);
+
+        Mail::assertQueued(
+            BookingConfirmationMail::class,
+            fn (BookingConfirmationMail $mail) => $mail->hasTo('ivan@example.com')
+                && $mail->booking->id === $booking->id
+        );
     }
 
     public function test_authenticated_customer_does_not_need_guest_details(): void

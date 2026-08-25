@@ -24,6 +24,43 @@ services:
         depends_on:
             - mysql
             - mailpit
+            - rabbitmq
+    queue:
+        build:
+            context: './vendor/laravel/sail/runtimes/8.4'
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: 'sail-8.4/app'
+        command: ['php', 'artisan', 'queue:work', 'rabbitmq', '--tries=3', '--backoff=5']
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - mysql
+            - mailpit
+            - rabbitmq
+    rabbitmq:
+        image: 'rabbitmq:4-management'
+        ports:
+            - '${FORWARD_RABBITMQ_PORT:-5672}:5672'
+            - '${FORWARD_RABBITMQ_DASHBOARD_PORT:-15672}:15672'
+        environment:
+            RABBITMQ_DEFAULT_USER: '${RABBITMQ_USER:-kinokill}'
+            RABBITMQ_DEFAULT_PASS: '${RABBITMQ_PASSWORD:-password}'
+            RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_VHOST:-/}'
+        volumes:
+            - 'sail-rabbitmq:/var/lib/rabbitmq'
+        networks:
+            - sail
+        healthcheck:
+            test: ['CMD', 'rabbitmq-diagnostics', 'check_port_connectivity']
+            retries: 5
+            timeout: 5s
     mysql:
         image: 'mysql:8.4'
         ports:
@@ -61,4 +98,6 @@ networks:
         driver: bridge
 volumes:
     sail-mysql:
+        driver: local
+    sail-rabbitmq:
         driver: local

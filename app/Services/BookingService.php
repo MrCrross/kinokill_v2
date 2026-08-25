@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Data\Booking\CreateBookingData;
 use App\Enums\BookingStatus;
 use App\Enums\SeatType;
+use App\Mail\BookingConfirmationMail;
 use App\Models\Booking;
 use App\Models\CinemaSession;
 use App\Models\User;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class BookingService
 {
@@ -21,7 +23,7 @@ class BookingService
 
     public function createBooking(CreateBookingData $data, ?User $user): Booking
     {
-        return DB::transaction(function () use ($data, $user) {
+        $booking = DB::transaction(function () use ($data, $user) {
             $session = CinemaSession::with('hall')->findOrFail($data->sessionId);
 
             $customer = $user
@@ -58,6 +60,13 @@ class BookingService
 
             return $booking;
         });
+
+        // Queued after the transaction has committed (not from inside it) so a
+        // worker can never pick up the job before the booking actually exists.
+        $booking = $this->bookings->findWithDetails($booking->id);
+        Mail::to($booking->customer->email)->queue(new BookingConfirmationMail($booking));
+
+        return $booking;
     }
 
     public function find(int $id): Booking
