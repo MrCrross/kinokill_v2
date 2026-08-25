@@ -129,7 +129,7 @@ resources/js/
 
 Текущая локаль хранится в сессии (`SetLocale` middleware, `app/Http/Middleware/SetLocale.php`, добавлен в `web`-группу перед `HandleInertiaRequests`) и переключается через `GET /locale/{ru|en}` (`LocaleController`). `HandleInertiaRequests::share()` прокидывает `locale` во все Inertia-страницы.
 
-На фронтенде переведены пока только Auth-страницы (`resources/js/pages/Auth/*`, `GuestLayout.vue`) — словари в `resources/js/shared/i18n/messages.ts`, чтение текущей локали и `t()` через `useI18n()` (`resources/js/shared/i18n/index.ts`). Остальной сайт (каталог, бронирование, админка) написан с русским текстом напрямую в шаблонах — не переведён на en; если понадобится, тот же `useI18n()` расширяется новыми ключами.
+На фронтенде через словари `t()`/`useI18n()` (`resources/js/shared/i18n/`) переключаются только Auth-страницы (`resources/js/pages/Auth/*`, `GuestLayout.vue`). Остальной сайт (каталог, бронирование, админка, `Profile`/`Dashboard`) написан с русским текстом напрямую в шаблонах — стилистически везде одна и та же тёмная тема (`resources/js/shared/ui/*` — `TextInput`/`InputLabel`/`PrimaryButton`/`SecondaryButton`/`DangerButton`/`Checkbox`/`Modal`/`InputError` — все под `bg-neutral-950`/`red-600`-акцент, никаких светлых Breeze-остатков), но не переведён на en; если понадобится — тот же `useI18n()` расширяется новыми ключами. `AuthenticatedLayout.vue` — тонкая обёртка над `MainLayout`/`SiteNavbar` (как и `AdminLayout.vue`), отдельной шапки/логотипа не держит.
 
 ## Известные решения по домену (см. полный план миграции)
 
