@@ -1,6 +1,6 @@
 <?php
 
-use App\Exceptions\CannotChangeOwnRoleException;
+use App\Exceptions\CannotRevokeOwnAccessException;
 use App\Exceptions\HasUpcomingSessionsException;
 use App\Exceptions\SeatAlreadyBookedException;
 use App\Exceptions\SessionOverlapException;
@@ -49,7 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return back()->withErrors(['starts_at' => $e->getMessage()]);
         });
 
-        $exceptions->render(function (CannotChangeOwnRoleException $e, Request $request) {
+        $exceptions->render(function (CannotRevokeOwnAccessException $e, Request $request) {
             return back()->with('error', $e->getMessage());
         });
     })->create();

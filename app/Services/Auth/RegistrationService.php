@@ -22,7 +22,7 @@ class RegistrationService
             'password' => Hash::make($data->password),
         ]);
 
-        $user->assignRole('customer');
+        $user->assignRole(config('roles.default_customer_role'));
 
         $this->customers->linkOrCreateForUser($user, $data->name, $data->email);
 

@@ -4,10 +4,10 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-class CannotChangeOwnRoleException extends RuntimeException
+class CannotRevokeOwnAccessException extends RuntimeException
 {
     public static function create(): self
     {
-        return new self('Нельзя снять с себя роль администратора.');
+        return new self('Нельзя назначить себе роль, которая лишит вас права управлять ролями пользователей.');
     }
 }

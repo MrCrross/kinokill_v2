@@ -2,18 +2,19 @@
 
 namespace App\Services;
 
-use App\Exceptions\CannotChangeOwnRoleException;
+use App\Exceptions\CannotRevokeOwnAccessException;
+use App\Models\Role;
 use App\Models\User;
 
 class UserRoleService
 {
     /**
-     * @throws CannotChangeOwnRoleException
+     * @throws CannotRevokeOwnAccessException
      */
-    public function assignRole(User $actor, User $target, string $role): User
+    public function assignRole(User $actor, User $target, Role $role): User
     {
-        if ($actor->is($target) && $role !== 'admin') {
-            throw CannotChangeOwnRoleException::create();
+        if ($actor->is($target) && ! $role->hasPermissionTo('users.manage-roles')) {
+            throw CannotRevokeOwnAccessException::create();
         }
 
         $target->syncRoles([$role]);

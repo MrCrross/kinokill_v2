@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -9,6 +11,19 @@ use Tests\TestCase;
 class RolesAndPermissionsTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_roles_and_permissions_are_seeded_with_russian_labels_and_descriptions(): void
+    {
+        Role::all()->each(function (Role $role) {
+            $this->assertNotEmpty($role->label, "Role [{$role->name}] is missing a label.");
+            $this->assertNotEmpty($role->description, "Role [{$role->name}] is missing a description.");
+        });
+
+        Permission::all()->each(function (Permission $permission) {
+            $this->assertNotEmpty($permission->label, "Permission [{$permission->name}] is missing a label.");
+            $this->assertNotEmpty($permission->description, "Permission [{$permission->name}] is missing a description.");
+        });
+    }
 
     public function test_admin_role_has_full_management_permissions(): void
     {

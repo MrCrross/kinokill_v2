@@ -2,6 +2,7 @@
 
 namespace App\Data\User;
 
+use App\Data\Role\RoleData;
 use App\Models\User;
 use Spatie\LaravelData\Data;
 
@@ -11,16 +12,18 @@ class UserAdminData extends Data
         public int $id,
         public string $name,
         public string $email,
-        public ?string $role,
+        public ?RoleData $role,
     ) {}
 
     public static function fromModel(User $user): self
     {
+        $role = $user->roles->first();
+
         return new self(
             id: $user->id,
             name: $user->name,
             email: $user->email,
-            role: $user->getRoleNames()->first(),
+            role: $role ? RoleData::fromModel($role) : null,
         );
     }
 }

@@ -2,15 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * Roles/permissions are described here as data (name + Russian label +
+     * description of what they grant) — application code never branches on
+     * a role's name, only on `->can('permission.name')`.
      */
     public function run(): void
     {
@@ -20,27 +24,77 @@ class RoleAndPermissionSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $permissions = [
-            'films.manage',
-            'sessions.manage',
-            'halls.manage',
-            'bookings.manage-any',
-            'users.manage-roles',
+            [
+                'name' => 'films.manage',
+                'label' => 'Управление фильмами',
+                'description' => 'Добавление, редактирование и удаление фильмов в каталоге.',
+            ],
+            [
+                'name' => 'sessions.manage',
+                'label' => 'Управление сеансами',
+                'description' => 'Планирование и отмена сеансов показа фильмов в залах.',
+            ],
+            [
+                'name' => 'halls.manage',
+                'label' => 'Управление залами',
+                'description' => 'Добавление и редактирование залов кинотеатра и схемы мест в них.',
+            ],
+            [
+                'name' => 'bookings.manage-any',
+                'label' => 'Управление чужими бронями',
+                'description' => 'Просмотр и подтверждение броней, оформленных другими покупателями (например, оплата наличными в кассе).',
+            ],
+            [
+                'name' => 'users.manage-roles',
+                'label' => 'Назначение ролей пользователям',
+                'description' => 'Изменение роли (набора прав) у любого зарегистрированного пользователя.',
+            ],
         ];
 
         foreach ($permissions as $permission) {
-            Permission::findOrCreate($permission);
+            Permission::query()->updateOrCreate(
+                ['name' => $permission['name']],
+                ['label' => $permission['label'], 'description' => $permission['description']],
+            );
         }
 
-        $admin = Role::findOrCreate('admin');
-        $admin->syncPermissions($permissions);
+        $roles = [
+            [
+                'name' => 'admin',
+                'label' => 'Администратор',
+                'description' => 'Полный доступ ко всем разделам администрирования кинотеатра.',
+                'permissions' => [
+                    'films.manage',
+                    'sessions.manage',
+                    'halls.manage',
+                    'bookings.manage-any',
+                    'users.manage-roles',
+                ],
+            ],
+            [
+                'name' => 'manager',
+                'label' => 'Менеджер',
+                'description' => 'Оперативное управление сеансами и бронями, без доступа к каталогу фильмов, залам и пользователям.',
+                'permissions' => [
+                    'sessions.manage',
+                    'bookings.manage-any',
+                ],
+            ],
+            [
+                'name' => 'customer',
+                'label' => 'Покупатель',
+                'description' => 'Обычный зарегистрированный посетитель сайта: бронирует билеты, доступа к администрированию не имеет.',
+                'permissions' => [],
+            ],
+        ];
 
-        $manager = Role::findOrCreate('manager');
-        $manager->syncPermissions([
-            'sessions.manage',
-            'bookings.manage-any',
-        ]);
+        foreach ($roles as $role) {
+            $model = Role::query()->updateOrCreate(
+                ['name' => $role['name']],
+                ['label' => $role['label'], 'description' => $role['description']],
+            );
 
-        // No special permissions: ownership-based access only (see Policies).
-        Role::findOrCreate('customer');
+            $model->syncPermissions($role['permissions']);
+        }
     }
 }

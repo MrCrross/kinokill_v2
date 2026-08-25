@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Data\Role\RoleData;
 use App\Data\User\UserAdminData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UpdateUserRoleRequest;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\UserRoleService;
 use Illuminate\Http\RedirectResponse;
@@ -19,17 +21,24 @@ class UserRoleController extends Controller
 
     public function index(): Response
     {
-        $users = User::query()->with('roles')->orderBy('name')->get()
+        $users = User::query()->with('roles.permissions')->orderBy('name')->get()
             ->map(fn ($user) => UserAdminData::fromModel($user))
             ->values()
             ->all();
 
-        return Inertia::render('Admin/Users/Index', ['users' => $users]);
+        $roles = Role::query()->with('permissions')->orderBy('name')->get()
+            ->map(fn ($role) => RoleData::fromModel($role))
+            ->values()
+            ->all();
+
+        return Inertia::render('Admin/Users/Index', ['users' => $users, 'roles' => $roles]);
     }
 
     public function update(UpdateUserRoleRequest $request, User $user): RedirectResponse
     {
-        $this->userRoles->assignRole($request->user(), $user, $request->validated('role'));
+        $role = Role::findOrFail($request->validated('role_id'));
+
+        $this->userRoles->assignRole($request->user(), $user, $role);
 
         return redirect()->route('admin.users.index')->with('success', 'Роль обновлена.');
     }

@@ -2,19 +2,35 @@
 import AdminLayout from '@/app/layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 
+interface RolePermission {
+    id: number;
+    name: string;
+    label: string | null;
+    description: string | null;
+}
+
+interface AdminRole {
+    id: number;
+    name: string;
+    label: string | null;
+    description: string | null;
+    permissions: RolePermission[];
+}
+
 interface AdminUser {
     id: number;
     name: string;
     email: string;
-    role: string | null;
+    role: AdminRole | null;
 }
 
 defineProps<{
     users: AdminUser[];
+    roles: AdminRole[];
 }>();
 
-function updateRole(user: AdminUser, role: string) {
-    router.put(`/admin/users/${user.id}/role`, { role });
+function updateRole(user: AdminUser, roleId: string) {
+    router.put(`/admin/users/${user.id}/role`, { role_id: Number(roleId) });
 }
 </script>
 
@@ -43,8 +59,9 @@ function updateRole(user: AdminUser, role: string) {
                         <td class="px-4 py-3">{{ user.email }}</td>
                         <td class="px-4 py-3">
                             <select
-                                :value="user.role ?? ''"
+                                :value="user.role?.id ?? ''"
                                 class="rounded border border-white/10 bg-white/5 px-2 py-1 text-white"
+                                :title="user.role?.description ?? ''"
                                 @change="
                                     updateRole(
                                         user,
@@ -54,14 +71,51 @@ function updateRole(user: AdminUser, role: string) {
                                 "
                             >
                                 <option value="" disabled>Без роли</option>
-                                <option value="admin">admin</option>
-                                <option value="manager">manager</option>
-                                <option value="customer">customer</option>
+                                <option
+                                    v-for="role in roles"
+                                    :key="role.id"
+                                    :value="role.id"
+                                    :title="role.description ?? ''"
+                                >
+                                    {{ role.label ?? role.name }}
+                                </option>
                             </select>
                         </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+            <div
+                v-for="role in roles"
+                :key="role.id"
+                class="rounded-lg bg-black/40 p-4"
+            >
+                <h2 class="font-medium text-white">
+                    {{ role.label ?? role.name }}
+                </h2>
+                <p
+                    v-if="role.description"
+                    class="mt-1 text-xs text-neutral-400"
+                >
+                    {{ role.description }}
+                </p>
+                <ul class="mt-3 space-y-1 text-xs text-neutral-300">
+                    <li
+                        v-if="role.permissions.length === 0"
+                        class="text-neutral-500"
+                    >
+                        Без прав администрирования
+                    </li>
+                    <li
+                        v-for="permission in role.permissions"
+                        :key="permission.id"
+                    >
+                        {{ permission.label ?? permission.name }}
+                    </li>
+                </ul>
+            </div>
         </div>
     </AdminLayout>
 </template>
