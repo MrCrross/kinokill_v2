@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Data\Film\FilmOptionData;
 use App\Data\Hall\HallOptionData;
-use App\Data\Session\SessionAdminData;
 use App\Data\Session\StoreSessionData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Session\StoreSessionRequest;
@@ -13,6 +12,7 @@ use App\Models\Film;
 use App\Models\Hall;
 use App\Services\CinemaSessionService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,14 +22,16 @@ class SessionAdminController extends Controller
         private readonly CinemaSessionService $sessions,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $sessions = $this->sessions->list()
-            ->map(fn ($session) => SessionAdminData::fromModel($session))
-            ->values()
-            ->all();
+        $search = $request->string('search')->trim()->value() ?: null;
+        $hallId = $request->integer('hall_id') ?: null;
 
-        return Inertia::render('Admin/Sessions/Index', ['sessions' => $sessions]);
+        return Inertia::render('Admin/Sessions/Index', [
+            'sessions' => $this->sessions->paginate($search, $hallId),
+            'halls' => Hall::query()->orderBy('name')->get()->map(fn ($hall) => HallOptionData::fromModel($hall))->all(),
+            'filters' => ['search' => $search, 'hall_id' => $hallId],
+        ]);
     }
 
     public function create(): Response

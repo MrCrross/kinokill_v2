@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FilmAdminController;
 use App\Http\Controllers\Admin\HallAdminController;
+use App\Http\Controllers\Admin\ReferenceAdminController;
 use App\Http\Controllers\Admin\SessionAdminController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\BookingController;
@@ -39,14 +41,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('dashboard');
-});
+Route::middleware(['auth', 'permission:films.manage|halls.manage|sessions.manage|bookings.manage-any|users.manage-roles'])
+    ->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', DashboardController::class)->name('dashboard');
+    });
 
 Route::middleware(['auth', 'permission:films.manage'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('films', FilmAdminController::class)->except('show');
+
+    Route::get('reference', [ReferenceAdminController::class, 'index'])->name('reference.index');
+    Route::post('reference/countries', [ReferenceAdminController::class, 'storeCountry'])->name('reference.countries.store');
+    Route::delete('reference/countries/{country:name}', [ReferenceAdminController::class, 'destroyCountry'])->name('reference.countries.destroy');
+    Route::post('reference/directors', [ReferenceAdminController::class, 'storeDirector'])->name('reference.directors.store');
+    Route::delete('reference/directors/{director:name}', [ReferenceAdminController::class, 'destroyDirector'])->name('reference.directors.destroy');
+    Route::post('reference/genres', [ReferenceAdminController::class, 'storeGenre'])->name('reference.genres.store');
+    Route::delete('reference/genres/{genre}', [ReferenceAdminController::class, 'destroyGenre'])->name('reference.genres.destroy');
 });
 
 Route::middleware(['auth', 'permission:halls.manage'])->prefix('admin')->name('admin.')->group(function () {
@@ -59,6 +68,8 @@ Route::middleware(['auth', 'permission:sessions.manage'])->prefix('admin')->name
 
 Route::middleware(['auth', 'permission:users.manage-roles'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('users', [UserRoleController::class, 'index'])->name('users.index');
+    Route::get('users/create', [UserRoleController::class, 'create'])->name('users.create');
+    Route::post('users', [UserRoleController::class, 'store'])->name('users.store');
     Route::put('users/{user}/role', [UserRoleController::class, 'update'])->name('users.update-role');
 });
 

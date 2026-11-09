@@ -5,11 +5,25 @@ namespace App\Repositories\Eloquent;
 use App\Models\CinemaSession;
 use App\Repositories\Contracts\CinemaSessionRepositoryInterface;
 use Carbon\CarbonInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 
 class EloquentCinemaSessionRepository implements CinemaSessionRepositoryInterface
 {
+    public function paginate(?string $search, ?int $hallId, int $perPage): LengthAwarePaginator
+    {
+        return CinemaSession::query()
+            ->with(['film', 'hall'])
+            ->when($search, fn ($query, $search) => $query->whereHas(
+                'film',
+                fn ($query) => $query->where('title', 'like', "%{$search}%")
+            ))
+            ->when($hallId, fn ($query, $hallId) => $query->where('hall_id', $hallId))
+            ->orderByDesc('starts_at')
+            ->paginate($perPage);
+    }
+
     /**
      * @return Collection<int, CinemaSession>
      */
@@ -18,6 +32,21 @@ class EloquentCinemaSessionRepository implements CinemaSessionRepositoryInterfac
         return CinemaSession::query()
             ->with(['film', 'hall'])
             ->where('starts_at', '>=', Date::now())
+            ->orderBy('starts_at')
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, CinemaSession>
+     */
+    public function forDate(CarbonInterface $date): Collection
+    {
+        $rangeStart = $date->isSameDay(Date::today()) ? Date::now() : $date->clone()->startOfDay();
+
+        return CinemaSession::query()
+            ->with(['film', 'hall'])
+            ->where('starts_at', '>=', $rangeStart)
+            ->where('starts_at', '<=', $date->clone()->endOfDay())
             ->orderBy('starts_at')
             ->get();
     }

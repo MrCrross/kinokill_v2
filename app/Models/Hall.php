@@ -61,4 +61,26 @@ class Hall extends Model
             }
         }
     }
+
+    /**
+     * Create the hall's seat map from an explicit list of positions, as
+     * designed in the admin seat-map editor. Unlike generateSeats(), a
+     * position not listed here simply has no seat (an aisle/gap).
+     *
+     * @param  array<int, array{row_number: int, column_number: int, seat_type: string}>  $seats
+     */
+    public function createSeats(array $seats): void
+    {
+        $now = now();
+
+        $this->seats()->insert(array_map(
+            fn (array $seat) => [
+                ...$seat,
+                'hall_id' => $this->id,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            $seats,
+        ));
+    }
 }

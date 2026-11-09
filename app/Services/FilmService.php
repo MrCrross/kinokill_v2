@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Data\Film\FilmListItemData;
 use App\Data\Film\StoreFilmData;
+use App\Data\Pagination\PaginatedData;
 use App\Exceptions\HasUpcomingSessionsException;
+use App\Models\Director;
 use App\Models\Film;
 use App\Repositories\Contracts\FilmRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,6 +27,14 @@ class FilmService
         return $this->films->all();
     }
 
+    public function paginate(?string $search, ?int $genreId): PaginatedData
+    {
+        return PaginatedData::fromPaginator(
+            $this->films->paginate($search, $genreId, perPage: 15),
+            fn (Film $film) => FilmListItemData::fromModel($film),
+        );
+    }
+
     public function find(int $id): Film
     {
         return $this->films->findWithGenres($id);
@@ -37,6 +48,7 @@ class FilmService
         ]);
 
         $film->genres()->sync($data->genreIds);
+        $this->registerDirector($data->producer);
 
         return $film->fresh('genres');
     }
@@ -55,6 +67,7 @@ class FilmService
 
         $film = $this->films->update($film, $attributes);
         $film->genres()->sync($data->genreIds);
+        $this->registerDirector($data->producer);
 
         return $film->fresh('genres');
     }
@@ -85,5 +98,14 @@ class FilmService
             'rating' => $data->rating,
             'description' => $data->description,
         ];
+    }
+
+    /**
+     * Saving a film with a new director name (the "Новый режиссёр" option in
+     * the form) registers it in the reference list automatically.
+     */
+    private function registerDirector(string $name): void
+    {
+        Director::query()->firstOrCreate(['name' => $name]);
     }
 }

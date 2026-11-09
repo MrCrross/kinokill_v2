@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/app/layouts/AdminLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { useAdminListFilters } from '@/shared/lib/useAdminListFilters';
+import Pagination from '@/shared/ui/Pagination.vue';
+import Select from '@/shared/ui/Select.vue';
+import TextInput from '@/shared/ui/TextInput.vue';
+import type { Paginated } from '@/shared/types';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface RolePermission {
     id: number;
@@ -24,10 +30,29 @@ interface AdminUser {
     role: AdminRole | null;
 }
 
-defineProps<{
-    users: AdminUser[];
+const props = defineProps<{
+    users: Paginated<AdminUser>;
     roles: AdminRole[];
+    filters: { search: string | null; role_id: number | null };
 }>();
+
+const roleOptions = computed(() =>
+    props.roles.map((role) => ({
+        value: String(role.id),
+        label: role.label ?? role.name,
+        description: role.description,
+    })),
+);
+
+const roleFilterOptions = computed(() => [
+    { value: '', label: 'Все роли' },
+    ...roleOptions.value,
+]);
+
+const { filters, goToPage } = useAdminListFilters('/admin/users', {
+    search: props.filters.search ?? '',
+    role_id: props.filters.role_id ? String(props.filters.role_id) : '',
+});
 
 function updateRole(user: AdminUser, roleId: string) {
     router.put(`/admin/users/${user.id}/role`, { role_id: Number(roleId) });
@@ -38,7 +63,29 @@ function updateRole(user: AdminUser, roleId: string) {
     <Head title="Пользователи — админка" />
 
     <AdminLayout>
-        <h1 class="mb-4 text-xl font-semibold text-white">Пользователи</h1>
+        <div class="mb-4 flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-white">Пользователи</h1>
+            <Link
+                href="/admin/users/create"
+                class="rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-500"
+            >
+                Добавить пользователя
+            </Link>
+        </div>
+
+        <div class="mb-4 flex flex-wrap gap-3">
+            <TextInput
+                v-model="filters.search"
+                placeholder="Поиск по имени или email…"
+                class="w-64"
+            />
+            <Select
+                v-model="filters.role_id"
+                :options="roleFilterOptions"
+                placeholder="Все роли"
+                class="w-48"
+            />
+        </div>
 
         <div class="overflow-x-auto rounded-lg bg-black/40">
             <table class="w-full text-left text-sm text-neutral-200">
@@ -51,40 +98,41 @@ function updateRole(user: AdminUser, roleId: string) {
                 </thead>
                 <tbody>
                     <tr
-                        v-for="user in users"
+                        v-for="user in users.data"
                         :key="user.id"
                         class="border-t border-white/10"
                     >
                         <td class="px-4 py-3">{{ user.name }}</td>
                         <td class="px-4 py-3">{{ user.email }}</td>
                         <td class="px-4 py-3">
-                            <select
-                                :value="user.role?.id ?? ''"
-                                class="rounded border border-white/10 bg-white/5 px-2 py-1 text-white"
-                                :title="user.role?.description ?? ''"
-                                @change="
-                                    updateRole(
-                                        user,
-                                        ($event.target as HTMLSelectElement)
-                                            .value,
-                                    )
+                            <Select
+                                class="max-w-48"
+                                :model-value="
+                                    user.role ? String(user.role.id) : undefined
                                 "
-                            >
-                                <option value="" disabled>Без роли</option>
-                                <option
-                                    v-for="role in roles"
-                                    :key="role.id"
-                                    :value="role.id"
-                                    :title="role.description ?? ''"
-                                >
-                                    {{ role.label ?? role.name }}
-                                </option>
-                            </select>
+                                :options="roleOptions"
+                                placeholder="Без роли"
+                                @update:model-value="
+                                    (value) => value && updateRole(user, value)
+                                "
+                            />
+                        </td>
+                    </tr>
+                    <tr v-if="users.data.length === 0">
+                        <td colspan="3" class="px-4 py-6 text-center text-neutral-500">
+                            Ничего не найдено.
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <Pagination
+            :current-page="users.currentPage"
+            :last-page="users.lastPage"
+            :total="users.total"
+            @change-page="goToPage"
+        />
 
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
             <div

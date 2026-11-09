@@ -31,7 +31,7 @@ class FilmSeeder extends Seeder
         ];
 
         foreach ($films as $attributes) {
-            $film = Film::create([
+            $film = Film::factory()->withPoster()->create([
                 ...$attributes,
                 'description' => "«{$attributes['title']}» — один из значимых фильмов последних лет, собравший высокие оценки критиков и зрителей.",
             ]);

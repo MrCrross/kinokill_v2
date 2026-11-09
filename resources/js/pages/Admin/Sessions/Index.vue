@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/app/layouts/AdminLayout.vue';
+import { useAdminListFilters } from '@/shared/lib/useAdminListFilters';
 import { formatFullDateTime } from '@/shared/lib/formatDateTime';
+import Pagination from '@/shared/ui/Pagination.vue';
+import Select from '@/shared/ui/Select.vue';
+import TextInput from '@/shared/ui/TextInput.vue';
+import type { Paginated } from '@/shared/types';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface SessionAdmin {
     id: number;
@@ -10,9 +16,26 @@ interface SessionAdmin {
     startsAt: string;
 }
 
-defineProps<{
-    sessions: SessionAdmin[];
+interface HallOption {
+    id: number;
+    name: string;
+}
+
+const props = defineProps<{
+    sessions: Paginated<SessionAdmin>;
+    halls: HallOption[];
+    filters: { search: string | null; hall_id: number | null };
 }>();
+
+const hallOptions = computed(() => [
+    { value: '', label: 'Все залы' },
+    ...props.halls.map((hall) => ({ value: String(hall.id), label: hall.name })),
+]);
+
+const { filters, goToPage } = useAdminListFilters('/admin/sessions', {
+    search: props.filters.search ?? '',
+    hall_id: props.filters.hall_id ? String(props.filters.hall_id) : '',
+});
 
 function destroy(session: SessionAdmin) {
     if (
@@ -39,6 +62,20 @@ function destroy(session: SessionAdmin) {
             </Link>
         </div>
 
+        <div class="mb-4 flex flex-wrap gap-3">
+            <TextInput
+                v-model="filters.search"
+                placeholder="Поиск по фильму…"
+                class="w-64"
+            />
+            <Select
+                v-model="filters.hall_id"
+                :options="hallOptions"
+                placeholder="Все залы"
+                class="w-48"
+            />
+        </div>
+
         <div class="overflow-x-auto rounded-lg bg-black/40">
             <table class="w-full text-left text-sm text-neutral-200">
                 <thead class="text-neutral-400">
@@ -51,7 +88,7 @@ function destroy(session: SessionAdmin) {
                 </thead>
                 <tbody>
                     <tr
-                        v-for="session in sessions"
+                        v-for="session in sessions.data"
                         :key="session.id"
                         class="border-t border-white/10"
                     >
@@ -70,8 +107,20 @@ function destroy(session: SessionAdmin) {
                             </button>
                         </td>
                     </tr>
+                    <tr v-if="sessions.data.length === 0">
+                        <td colspan="4" class="px-4 py-6 text-center text-neutral-500">
+                            Ничего не найдено.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+
+        <Pagination
+            :current-page="sessions.currentPage"
+            :last-page="sessions.lastPage"
+            :total="sessions.total"
+            @change-page="goToPage"
+        />
     </AdminLayout>
 </template>

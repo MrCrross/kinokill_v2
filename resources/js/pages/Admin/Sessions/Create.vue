@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/app/layouts/AdminLayout.vue';
+import AppIcon from '@/shared/ui/AppIcon.vue';
+import InputError from '@/shared/ui/InputError.vue';
+import InputLabel from '@/shared/ui/InputLabel.vue';
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue';
+import Select from '@/shared/ui/Select.vue';
+import TextInput from '@/shared/ui/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface FilmOption {
     id: number;
@@ -12,10 +19,17 @@ interface HallOption {
     name: string;
 }
 
-defineProps<{
+const props = defineProps<{
     films: FilmOption[];
     halls: HallOption[];
 }>();
+
+const filmOptions = computed(() =>
+    props.films.map((film) => ({ value: String(film.id), label: film.title })),
+);
+const hallOptions = computed(() =>
+    props.halls.map((hall) => ({ value: String(hall.id), label: hall.name })),
+);
 
 const form = useForm({
     film_id: '',
@@ -41,98 +55,62 @@ function submit() {
             @submit.prevent="submit"
         >
             <div>
-                <label class="mb-1 block text-sm text-neutral-300">Фильм</label>
-                <select
+                <InputLabel value="Фильм" />
+                <Select
                     v-model="form.film_id"
-                    class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-white"
-                >
-                    <option value="" disabled>Выберите фильм</option>
-                    <option
-                        v-for="film in films"
-                        :key="film.id"
-                        :value="film.id"
-                    >
-                        {{ film.title }}
-                    </option>
-                </select>
-                <p v-if="form.errors.film_id" class="mt-1 text-xs text-red-400">
-                    {{ form.errors.film_id }}
-                </p>
+                    :options="filmOptions"
+                    placeholder="Выберите фильм"
+                />
+                <InputError :message="form.errors.film_id" />
             </div>
 
             <div>
-                <label class="mb-1 block text-sm text-neutral-300">Зал</label>
-                <select
+                <InputLabel value="Зал" />
+                <Select
                     v-model="form.hall_id"
-                    class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-white"
-                >
-                    <option value="" disabled>Выберите зал</option>
-                    <option
-                        v-for="hall in halls"
-                        :key="hall.id"
-                        :value="hall.id"
-                    >
-                        {{ hall.name }}
-                    </option>
-                </select>
-                <p v-if="form.errors.hall_id" class="mt-1 text-xs text-red-400">
-                    {{ form.errors.hall_id }}
-                </p>
+                    :options="hallOptions"
+                    placeholder="Выберите зал"
+                />
+                <InputError :message="form.errors.hall_id" />
             </div>
 
             <div>
-                <label class="mb-1 block text-sm text-neutral-300"
-                    >Дата и время</label
-                >
-                <input
+                <InputLabel value="Дата и время" />
+                <TextInput
                     v-model="form.starts_at"
                     type="datetime-local"
-                    class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-white"
+                    class="w-full"
                 />
-                <p
-                    v-if="form.errors.starts_at"
-                    class="mt-1 text-xs text-red-400"
-                >
-                    {{ form.errors.starts_at }}
-                </p>
+                <InputError :message="form.errors.starts_at" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="mb-1 block text-sm text-neutral-300"
-                        >Цена стандарт (необязательно)</label
-                    >
-                    <input
+                    <InputLabel value="Цена стандарт (необязательно)" />
+                    <TextInput
                         v-model="form.price_standard"
                         type="number"
-                        min="0"
                         step="0.01"
-                        class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-white"
                         placeholder="цена зала"
+                        class="w-full"
                     />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm text-neutral-300"
-                        >Цена VIP (необязательно)</label
-                    >
-                    <input
+                    <InputLabel value="Цена VIP (необязательно)" />
+                    <TextInput
                         v-model="form.price_vip"
                         type="number"
-                        min="0"
                         step="0.01"
-                        class="w-full rounded border border-white/10 bg-white/5 px-3 py-2 text-white"
                         placeholder="цена зала"
+                        class="w-full"
                     />
                 </div>
             </div>
 
-            <button
-                type="submit"
-                :disabled="form.processing"
-                class="rounded bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-500 disabled:opacity-50"
-            >
+            <PrimaryButton type="submit" :disabled="form.processing">
+                <AppIcon name="save" :size="16" />
                 Сохранить
-            </button>
+            </PrimaryButton>
         </form>
     </AdminLayout>
 </template>

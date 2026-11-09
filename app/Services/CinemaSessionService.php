@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Data\Pagination\PaginatedData;
+use App\Data\Session\SessionAdminData;
 use App\Data\Session\StoreSessionData;
 use App\Exceptions\SessionOverlapException;
 use App\Models\CinemaSession;
@@ -16,12 +18,28 @@ class CinemaSessionService
         private readonly CinemaSessionRepositoryInterface $sessions,
     ) {}
 
+    public function paginate(?string $search, ?int $hallId): PaginatedData
+    {
+        return PaginatedData::fromPaginator(
+            $this->sessions->paginate($search, $hallId, perPage: 15),
+            fn (CinemaSession $session) => SessionAdminData::fromModel($session),
+        );
+    }
+
     /**
      * @return Collection<int, CinemaSession>
      */
     public function upcoming(): Collection
     {
         return $this->sessions->upcoming();
+    }
+
+    /**
+     * @return Collection<int, CinemaSession>
+     */
+    public function forDate(Carbon $date): Collection
+    {
+        return $this->sessions->forDate($date);
     }
 
     /**

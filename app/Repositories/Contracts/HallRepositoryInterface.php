@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Hall;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface HallRepositoryInterface
@@ -13,6 +14,8 @@ interface HallRepositoryInterface
      * @return Collection<int, Hall>
      */
     public function all(): Collection;
+
+    public function paginate(?string $search, int $perPage): LengthAwarePaginator;
 
     /**
      * @param  array<string, mixed>  $attributes

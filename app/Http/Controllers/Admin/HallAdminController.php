@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\Hall\HallAdminData;
+use App\Data\Hall\SeatMapEntryData;
 use App\Data\Hall\StoreHallData;
 use App\Data\Hall\UpdateHallData;
 use App\Http\Controllers\Controller;
@@ -10,6 +11,7 @@ use App\Http\Requests\Hall\StoreHallRequest;
 use App\Http\Requests\Hall\UpdateHallRequest;
 use App\Services\HallService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,14 +21,14 @@ class HallAdminController extends Controller
         private readonly HallService $halls,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $halls = $this->halls->list()
-            ->map(fn ($hall) => HallAdminData::fromModel($hall))
-            ->values()
-            ->all();
+        $search = $request->string('search')->trim()->value() ?: null;
 
-        return Inertia::render('Admin/Halls/Index', ['halls' => $halls]);
+        return Inertia::render('Admin/Halls/Index', [
+            'halls' => $this->halls->paginate($search),
+            'filters' => ['search' => $search],
+        ]);
     }
 
     public function create(): Response
@@ -42,6 +44,13 @@ class HallAdminController extends Controller
             columnsCount: (int) $request->validated('columns_count'),
             priceStandard: (float) $request->validated('price_standard'),
             priceVip: (float) $request->validated('price_vip'),
+            seats: collect($request->validated('seats'))
+                ->map(fn (array $seat) => new SeatMapEntryData(
+                    rowNumber: (int) $seat['row_number'],
+                    columnNumber: (int) $seat['column_number'],
+                    seatType: $seat['seat_type'],
+                ))
+                ->all(),
         ));
 
         return redirect()->route('admin.halls.index')->with('success', 'Зал добавлен.');

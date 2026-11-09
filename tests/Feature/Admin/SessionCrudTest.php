@@ -7,11 +7,47 @@ use App\Models\Film;
 use App\Models\Hall;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class SessionCrudTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_can_search_sessions_by_film_title(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $hall = Hall::factory()->withSeats()->create();
+        $dune = Film::factory()->create(['title' => 'Дюна']);
+        $barbie = Film::factory()->create(['title' => 'Барби']);
+        CinemaSession::factory()->create(['film_id' => $dune->id, 'hall_id' => $hall->id]);
+        CinemaSession::factory()->create(['film_id' => $barbie->id, 'hall_id' => $hall->id]);
+
+        $response = $this->actingAs($admin)->get('/admin/sessions?search=Дюна');
+
+        $response->assertInertia(
+            fn (Assert $page) => $page
+                ->has('sessions.data', 1)
+                ->where('sessions.data.0.filmTitle', 'Дюна')
+        );
+    }
+
+    public function test_admin_can_filter_sessions_by_hall(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $hallA = Hall::factory()->withSeats()->create(['name' => 'Зал А']);
+        $hallB = Hall::factory()->withSeats()->create(['name' => 'Зал Б']);
+        CinemaSession::factory()->create(['hall_id' => $hallA->id]);
+        CinemaSession::factory()->create(['hall_id' => $hallB->id]);
+
+        $response = $this->actingAs($admin)->get("/admin/sessions?hall_id={$hallA->id}");
+
+        $response->assertInertia(
+            fn (Assert $page) => $page
+                ->has('sessions.data', 1)
+                ->where('sessions.data.0.hallName', 'Зал А')
+        );
+    }
 
     public function test_manager_can_create_a_session(): void
     {

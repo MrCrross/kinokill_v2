@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import UserMenu from '@/entities/user/ui/UserMenu.vue';
+import { useI18n } from '@/shared/i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const page = usePage();
+const { locale } = useI18n();
 
 const user = computed(() => page.props.auth?.user ?? null);
 const permissions = computed(
@@ -49,6 +51,33 @@ const mobileMenuOpen = ref(false);
                     >
                         Админка
                     </Link>
+
+                    <nav
+                        class="flex items-center gap-1"
+                        aria-label="Язык / Language"
+                    >
+                        <Link
+                            :href="route('locale.update', 'ru')"
+                            :class="
+                                locale === 'ru'
+                                    ? 'text-white'
+                                    : 'text-neutral-500 hover:text-neutral-300'
+                            "
+                        >
+                            RU
+                        </Link>
+                        <span class="text-neutral-700">/</span>
+                        <Link
+                            :href="route('locale.update', 'en')"
+                            :class="
+                                locale === 'en'
+                                    ? 'text-white'
+                                    : 'text-neutral-500 hover:text-neutral-300'
+                            "
+                        >
+                            EN
+                        </Link>
+                    </nav>
 
                     <UserMenu :user="user" />
                 </nav>
@@ -100,6 +129,29 @@ const mobileMenuOpen = ref(false);
                 >
                     Админка
                 </Link>
+                <nav class="flex items-center gap-1" aria-label="Язык / Language">
+                    <Link
+                        :href="route('locale.update', 'ru')"
+                        :class="
+                            locale === 'ru'
+                                ? 'text-white'
+                                : 'text-neutral-500 hover:text-neutral-300'
+                        "
+                    >
+                        RU
+                    </Link>
+                    <span class="text-neutral-700">/</span>
+                    <Link
+                        :href="route('locale.update', 'en')"
+                        :class="
+                            locale === 'en'
+                                ? 'text-white'
+                                : 'text-neutral-500 hover:text-neutral-300'
+                        "
+                    >
+                        EN
+                    </Link>
+                </nav>
                 <UserMenu :user="user" />
             </nav>
         </div>

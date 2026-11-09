@@ -1,11 +1,29 @@
 <script setup lang="ts">
 import AdminLayout from '@/app/layouts/AdminLayout.vue';
-import type { FilmListItem } from '@/entities/film/model/types';
+import type { FilmListItem, Genre } from '@/entities/film/model/types';
+import { useAdminListFilters } from '@/shared/lib/useAdminListFilters';
+import Pagination from '@/shared/ui/Pagination.vue';
+import Select from '@/shared/ui/Select.vue';
+import TextInput from '@/shared/ui/TextInput.vue';
+import type { Paginated } from '@/shared/types';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-defineProps<{
-    films: FilmListItem[];
+const props = defineProps<{
+    films: Paginated<FilmListItem>;
+    genres: Genre[];
+    filters: { search: string | null; genre_id: number | null };
 }>();
+
+const genreOptions = computed(() => [
+    { value: '', label: 'Все жанры' },
+    ...props.genres.map((genre) => ({ value: String(genre.id), label: genre.name })),
+]);
+
+const { filters, goToPage } = useAdminListFilters('/admin/films', {
+    search: props.filters.search ?? '',
+    genre_id: props.filters.genre_id ? String(props.filters.genre_id) : '',
+});
 
 function destroy(film: FilmListItem) {
     if (confirm(`Удалить фильм «${film.title}»?`)) {
@@ -28,6 +46,20 @@ function destroy(film: FilmListItem) {
             </Link>
         </div>
 
+        <div class="mb-4 flex flex-wrap gap-3">
+            <TextInput
+                v-model="filters.search"
+                placeholder="Поиск по названию…"
+                class="w-64"
+            />
+            <Select
+                v-model="filters.genre_id"
+                :options="genreOptions"
+                placeholder="Все жанры"
+                class="w-48"
+            />
+        </div>
+
         <div class="overflow-x-auto rounded-lg bg-black/40">
             <table class="w-full text-left text-sm text-neutral-200">
                 <thead class="text-neutral-400">
@@ -40,7 +72,7 @@ function destroy(film: FilmListItem) {
                 </thead>
                 <tbody>
                     <tr
-                        v-for="film in films"
+                        v-for="film in films.data"
                         :key="film.id"
                         class="border-t border-white/10"
                     >
@@ -63,8 +95,20 @@ function destroy(film: FilmListItem) {
                             </button>
                         </td>
                     </tr>
+                    <tr v-if="films.data.length === 0">
+                        <td colspan="4" class="px-4 py-6 text-center text-neutral-500">
+                            Ничего не найдено.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+
+        <Pagination
+            :current-page="films.currentPage"
+            :last-page="films.lastPage"
+            :total="films.total"
+            @change-page="goToPage"
+        />
     </AdminLayout>
 </template>

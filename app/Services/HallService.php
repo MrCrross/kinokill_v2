@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Data\Hall\HallAdminData;
+use App\Data\Hall\SeatMapEntryData;
 use App\Data\Hall\StoreHallData;
 use App\Data\Hall\UpdateHallData;
+use App\Data\Pagination\PaginatedData;
 use App\Exceptions\HasUpcomingSessionsException;
 use App\Models\Hall;
 use App\Repositories\Contracts\HallRepositoryInterface;
@@ -28,6 +31,14 @@ class HallService
         return $this->halls->all();
     }
 
+    public function paginate(?string $search): PaginatedData
+    {
+        return PaginatedData::fromPaginator(
+            $this->halls->paginate($search, perPage: 15),
+            fn (Hall $hall) => HallAdminData::fromModel($hall),
+        );
+    }
+
     public function create(StoreHallData $data): Hall
     {
         $hall = $this->halls->create([
@@ -38,7 +49,11 @@ class HallService
             'price_vip' => $data->priceVip,
         ]);
 
-        $hall->generateSeats();
+        $hall->createSeats(array_map(fn (SeatMapEntryData $seat) => [
+            'row_number' => $seat->rowNumber,
+            'column_number' => $seat->columnNumber,
+            'seat_type' => $seat->seatType,
+        ], $data->seats));
 
         return $hall;
     }

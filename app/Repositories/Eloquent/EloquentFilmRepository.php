@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Film;
 use App\Repositories\Contracts\FilmRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 
@@ -15,6 +16,18 @@ class EloquentFilmRepository implements FilmRepositoryInterface
     public function all(): Collection
     {
         return Film::query()->orderBy('title')->get();
+    }
+
+    public function paginate(?string $search, ?int $genreId, int $perPage): LengthAwarePaginator
+    {
+        return Film::query()
+            ->when($search, fn ($query, $search) => $query->where('title', 'like', "%{$search}%"))
+            ->when($genreId, fn ($query, $genreId) => $query->whereHas(
+                'genres',
+                fn ($query) => $query->where('genres.id', $genreId)
+            ))
+            ->orderBy('title')
+            ->paginate($perPage);
     }
 
     public function findWithGenres(int $id): Film

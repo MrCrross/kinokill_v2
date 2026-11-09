@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import MainLayout from '@/app/layouts/MainLayout.vue';
-import type { FilmSchedule } from '@/entities/session/model/types';
+import type { FilmSchedule, ScheduleDay } from '@/entities/session/model/types';
+import ScheduleDayTabs from '@/widgets/schedule-day-tabs/ui/ScheduleDayTabs.vue';
 import SessionTimeline from '@/widgets/session-timeline/ui/SessionTimeline.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 defineProps<{
     schedule: FilmSchedule[];
+    days: ScheduleDay[];
 }>();
 </script>
 
@@ -19,8 +21,10 @@ defineProps<{
             Расписание сеансов
         </h1>
 
+        <ScheduleDayTabs :days="days" />
+
         <p v-if="schedule.length === 0" class="text-neutral-400">
-            Ближайших сеансов пока нет.
+            На эту дату сеансов нет.
         </p>
 
         <div v-else class="space-y-6">

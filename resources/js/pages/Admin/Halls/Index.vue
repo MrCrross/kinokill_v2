@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/app/layouts/AdminLayout.vue';
+import { useAdminListFilters } from '@/shared/lib/useAdminListFilters';
+import Pagination from '@/shared/ui/Pagination.vue';
+import TextInput from '@/shared/ui/TextInput.vue';
+import type { Paginated } from '@/shared/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 
 interface Hall {
@@ -11,9 +15,14 @@ interface Hall {
     priceVip: string;
 }
 
-defineProps<{
-    halls: Hall[];
+const props = defineProps<{
+    halls: Paginated<Hall>;
+    filters: { search: string | null };
 }>();
+
+const { filters, goToPage } = useAdminListFilters('/admin/halls', {
+    search: props.filters.search ?? '',
+});
 
 function destroy(hall: Hall) {
     if (confirm(`Удалить зал «${hall.name}»?`)) {
@@ -36,6 +45,14 @@ function destroy(hall: Hall) {
             </Link>
         </div>
 
+        <div class="mb-4">
+            <TextInput
+                v-model="filters.search"
+                placeholder="Поиск по названию…"
+                class="w-64"
+            />
+        </div>
+
         <div class="overflow-x-auto rounded-lg bg-black/40">
             <table class="w-full text-left text-sm text-neutral-200">
                 <thead class="text-neutral-400">
@@ -48,7 +65,7 @@ function destroy(hall: Hall) {
                 </thead>
                 <tbody>
                     <tr
-                        v-for="hall in halls"
+                        v-for="hall in halls.data"
                         :key="hall.id"
                         class="border-t border-white/10"
                     >
@@ -75,8 +92,20 @@ function destroy(hall: Hall) {
                             </button>
                         </td>
                     </tr>
+                    <tr v-if="halls.data.length === 0">
+                        <td colspan="4" class="px-4 py-6 text-center text-neutral-500">
+                            Ничего не найдено.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+
+        <Pagination
+            :current-page="halls.currentPage"
+            :last-page="halls.lastPage"
+            :total="halls.total"
+            @change-page="goToPage"
+        />
     </AdminLayout>
 </template>

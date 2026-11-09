@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Hall;
 use App\Repositories\Contracts\HallRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 
@@ -20,6 +21,14 @@ class EloquentHallRepository implements HallRepositoryInterface
     public function all(): Collection
     {
         return Hall::query()->orderBy('name')->get();
+    }
+
+    public function paginate(?string $search, int $perPage): LengthAwarePaginator
+    {
+        return Hall::query()
+            ->when($search, fn ($query, $search) => $query->where('name', 'like', "%{$search}%"))
+            ->orderBy('name')
+            ->paginate($perPage);
     }
 
     /**

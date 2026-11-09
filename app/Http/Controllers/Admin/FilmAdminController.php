@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\Film\FilmData;
-use App\Data\Film\FilmListItemData;
 use App\Data\Film\GenreData;
 use App\Data\Film\StoreFilmData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Film\StoreFilmRequest;
 use App\Http\Requests\Film\UpdateFilmRequest;
+use App\Models\Country;
+use App\Models\Director;
+use App\Models\Film;
 use App\Models\Genre;
 use App\Services\FilmService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,19 +24,21 @@ class FilmAdminController extends Controller
         private readonly FilmService $films,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $films = $this->films->list()
-            ->map(fn ($film) => FilmListItemData::fromModel($film))
-            ->values()
-            ->all();
+        $search = $request->string('search')->trim()->value() ?: null;
+        $genreId = $request->integer('genre_id') ?: null;
 
-        return Inertia::render('Admin/Films/Index', ['films' => $films]);
+        return Inertia::render('Admin/Films/Index', [
+            'films' => $this->films->paginate($search, $genreId),
+            'genres' => $this->genreOptions(),
+            'filters' => ['search' => $search, 'genre_id' => $genreId],
+        ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Films/Create', ['genres' => $this->genreOptions()]);
+        return Inertia::render('Admin/Films/Create', $this->formOptions());
     }
 
     public function store(StoreFilmRequest $request): RedirectResponse
@@ -45,9 +50,11 @@ class FilmAdminController extends Controller
 
     public function edit(int $film): Response
     {
+        $film = $this->films->find($film);
+
         return Inertia::render('Admin/Films/Edit', [
-            'film' => FilmData::fromModel($this->films->find($film)),
-            'genres' => $this->genreOptions(),
+            'film' => FilmData::fromModel($film),
+            ...$this->formOptions(extraCountries: [$film->country]),
         ]);
     }
 
@@ -77,6 +84,22 @@ class FilmAdminController extends Controller
             description: $request->validated('description'),
             genreIds: $request->validated('genre_ids') ?? [],
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formOptions(array $extraCountries = []): array
+    {
+        return [
+            'genres' => $this->genreOptions(),
+            'countries' => array_values(array_unique([
+                ...Country::query()->orderBy('name')->pluck('name')->all(),
+                ...$extraCountries,
+            ])),
+            'producers' => Director::query()->orderBy('name')->pluck('name')->all(),
+            'ageRatings' => config('films.age_ratings'),
+        ];
     }
 
     /**

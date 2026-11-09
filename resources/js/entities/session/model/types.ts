@@ -23,3 +23,8 @@ export interface FilmSchedule {
     film: import('@/entities/film/model/types').FilmListItem;
     sessions: SessionListItem[];
 }
+
+export interface ScheduleDay {
+    date: string;
+    isSelected: boolean;
+}

@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Film;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface FilmRepositoryInterface
@@ -11,6 +12,8 @@ interface FilmRepositoryInterface
      * @return Collection<int, Film>
      */
     public function all(): Collection;
+
+    public function paginate(?string $search, ?int $genreId, int $perPage): LengthAwarePaginator;
 
     public function findWithGenres(int $id): Film;
 
